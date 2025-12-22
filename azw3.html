@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yi图书名azw3查找</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 50px auto;
+            /* 移除毛玻璃，改用纯色背景 */
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .search-bar {
+            margin-bottom: 25px;
+        }
+
+        #bookNameInput {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #ffffff;
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #bookNameInput:focus {
+            border-color: #409eff;
+        }
+
+        .result-container {
+            min-height: 100px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #e4e7ed;
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #333;
+            transition: background-color 0.3s;
+            border-radius: 4px;
+        }
+
+        .result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .result-item strong {
+            color: #409eff;
+        }
+
+        .no-result {
+            text-align: center;
+            color: #666;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+
+        .all-book-names {
+            padding: 15px;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .all-book-names strong {
+            color: #409eff;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+   
+        <div class="search-bar">
+            <input type="text" id="bookNameInput" placeholder="输入关键词检索，支持实时匹配...">
+        </div>
+        <div class="result-container" id="resultContainer"></div>
+    </div>
+
+    <script>
+        // 单机本地书籍数据
+        const bookData = [
+ { bookName: "2021年度畅销历史精选集（共13册）.azw3" },
+{ bookName: "20岁,光阴不再来.azw3" },
+{ bookName: "3分钟哲学.azw3" },
+{ bookName: "51区.azw3" },
+{ bookName: "Ba Fei Te Tou Zi Cheng Gong De - Ma Li _Ba Fei Te.azw3" },
+{ bookName: "X的悲剧.azw3" },
+{ bookName: "“世界文明与文化”系列（套装共4册）.azw3" },
+{ bookName: "《智慧与思维五部曲》.azw3" },
+{ bookName: "一个人的朝圣.azw3" },
+{ bookName: "一城草木.azw3" },
+{ bookName: "一年通往作家路.azw3" },
+{ bookName: "一往无前.azw3" },
+{ bookName: "一把盐下饭菜.azw3" },
+{ bookName: "三体（全集）.azw3" },
+{ bookName: "三千世界（全4册）.azw3" },
+{ bookName: "三国演义漫画版全套（共20册）.azw3" },
+{ bookName: "三生三世·枕上书.azw3" },
+{ bookName: "不可不读的文学经典系列.azw3" },
+{ bookName: "不成熟的父母.azw3" },
+{ bookName: "不畏将来 不念过去.azw3" },
+{ bookName: "与神对话.azw3" },
+{ bookName: "东京奇谭集.azw3" },
+{ bookName: "东荡子的诗.azw3" },
+{ bookName: "东野圭吾精选集.azw3" },
+{ bookName: "严歌苓合集典藏版.azw3" },
+{ bookName: "中信世界经典必读系列（共15册.azw3" },
+{ bookName: "中信出版-世界投资经典系列（套装12册.azw3" },
+{ bookName: "中国悬疑鼻祖：民国探案大全集.azw3" },
+{ bookName: "中国经典古典名著（套装20册）.azw3" },
+{ bookName: "丰乳肥臀.azw3" },
+{ bookName: "乌合之众.azw3" },
+{ bookName: "书剑恩仇录（世纪新修版）.azw3" },
+{ bookName: "二月河文集.azw3" },
+{ bookName: "京华烟云.azw3" },
+{ bookName: "人生的智慧：如何才能幸福度过一生.azw3" },
+{ bookName: "人间烟火：梁晓声作品精选集（套装共25册.azw3" },
+{ bookName: "什么是最好的父母.azw3" },
+{ bookName: "从你的全世界路过.azw3" },
+{ bookName: "佛洛依德心理学经典.azw3" },
+{ bookName: "你从未真正拼过.azw3" },
+{ bookName: "你好，陌生人.azw3" },
+{ bookName: "你的自律，给你自由.azw3" },
+{ bookName: "依然热爱生活.azw3" },
+{ bookName: "侠客行（世纪新修版）.azw3" },
+{ bookName: "俗世奇人 - 冯骥才.azw3" },
+{ bookName: "信任：社会美德与创造经济繁荣.azw3" },
+{ bookName: "倒悬的地平线.azw3" },
+{ bookName: "倚天屠龙记（世纪新修版).azw3" },
+{ bookName: "倭寇战争全史.azw3" },
+{ bookName: "假如岁月足够长.azw3" },
+{ bookName: "傲慢与偏见.azw3" },
+{ bookName: "像喜欢甜一样喜欢苦.azw3" },
+{ bookName: "像经济学家一样思考.azw3" },
+{ bookName: "公牛山.azw3" },
+{ bookName: "冬牧场.azw3" },
+{ bookName: "刘慈欣短篇作品.azw3" },
+{ bookName: "创新自信力.azw3" },
+{ bookName: "创造日本：1853—1964.azw3" },
+{ bookName: "别想生活有答案.azw3" },
+{ bookName: "北京北京.azw3" },
+{ bookName: "北平无战事.azw3" },
+{ bookName: "十位童话大师写给孩子的至美童话（全十本.azw3" },
+{ bookName: "半小时漫画大套装.azw3" },
+{ bookName: "半小时漫画科学史.azw3" },
+{ bookName: "半小时漫画预防常见病.azw3" },
+{ bookName: "华生手稿.azw3" },
+{ bookName: "即兴演讲.azw3" },
+{ bookName: "原则 - 瑞达利欧.azw3" },
+{ bookName: "反本能：如何对抗你的习以为常 - 卫蓝.azw3" },
+{ bookName: "变态疗法.azw3" },
+{ bookName: "古拉格之恋：一个爱情与求生的真实故事.azw3" },
+{ bookName: "古董局中局 - 马伯庸.azw3" },
+{ bookName: "古董衣情缘（珍藏版）.azw3" },
+{ bookName: "古龙作品集.azw3" },
+{ bookName: "只因目中无人.azw3" },
+{ bookName: "可口可乐传：一部浩荡的品牌发展史诗 - 马克·彭德格拉斯特 (2).azw3" },
+{ bookName: "可复制的领导力：樊登的9堂商业课.azw3" },
+{ bookName: "君主论.azw3" },
+{ bookName: "呼吸.azw3" },
+{ bookName: "哈佛大学经典课程分享（套装9册）.azw3" },
+{ bookName: "哈利波特（全集）.azw3" },
+{ bookName: "哪些科学新发现即将改变世界（共8册）.azw3" },
+{ bookName: "唐诗鉴赏辞典 (中国古典诗词曲赋鉴赏系列工具书).azw3" },
+{ bookName: "唤醒创作力.azw3" },
+{ bookName: "囚鸟.azw3" },
+{ bookName: "四海鲸骑(套装共2册).azw3" },
+{ bookName: "回答不了（豆瓣评分9.0）.azw3" },
+{ bookName: "回访历史：新东欧之旅（东欧版《二手时间》，讲述普通人的信仰、希望、忐忑与矛盾）.azw3" },
+{ bookName: "园丁与木匠.azw3" },
+{ bookName: "围城.azw3" },
+{ bookName: "国际大奖文学经典（套装共10册）.azw3" },
+{ bookName: "图灵程序设计丛书：数据科学从入门到实.azw3" },
+{ bookName: "图说区块链.azw3" },
+{ bookName: "在难搞的日子笑出声来.azw3" },
+{ bookName: "垂直的阅读.azw3" },
+{ bookName: "城门开.azw3" },
+{ bookName: "基因宇宙.azw3" },
+{ bookName: "塔木德智慧全集.azw3" },
+{ bookName: "外国名著小说合集（套装14册.azw3" },
+{ bookName: "大秦帝国.azw3" },
+{ bookName: "天上再见.azw3" },
+{ bookName: "天龙八部（世纪新修版）.azw3" },
+{ bookName: "失控.azw3" },
+{ bookName: "失物之书.azw3" },
+{ bookName: "奥斯曼帝国的衰亡：一战中东，1914—1920.azw3" },
+{ bookName: "好人宋没用.azw3" },
+{ bookName: "好味道的秘密.azw3" },
+{ bookName: "好奇心的秘密：天才是如何炼成的.azw3" },
+{ bookName: "好好说话.azw3" },
+{ bookName: "如何成为讲话有趣的人.azw3" },
+{ bookName: "如何提升性格优势.azw3" },
+{ bookName: "如何阅读一本书 - 莫提默·J·艾德勒、查尔斯·范多伦.azw3" },
+{ bookName: "如何阅读一本书（英文版）.azw3" },
+{ bookName: "如何阅读一本文学书.azw3" },
+{ bookName: "娜塔莎之舞：俄罗斯文化史（通过俄国的文学和艺术，探索俄罗斯民族的建构及其内心世界）.azw3" },
+{ bookName: "婚姻的意义.azw3" },
+{ bookName: "孙子兵法.azw3" },
+{ bookName: "学习技巧.azw3" },
+{ bookName: "学会独立思考.azw3" },
+{ bookName: "孩子你慢慢来.azw3" },
+{ bookName: "宇宙之书.azw3" },
+{ bookName: "宋慈洗冤笔记（1-3册）【公众号：电子书优选.azw3" },
+{ bookName: "宋慈洗冤笔记（1-3册）子书优选.azw3" },
+{ bookName: "宋词鉴赏辞典 (中国古典诗词曲赋鉴赏系列工具书).azw3" },
+{ bookName: "富有的习惯.azw3" },
+{ bookName: "富爸爸，穷爸爸.azw3" },
+{ bookName: "射雕英雄传（世纪新修版）.azw3" },
+{ bookName: "小王子.azw3" },
+{ bookName: "小逻辑.azw3" },
+{ bookName: "少将滋干之母.azw3" },
+{ bookName: "少年Pi的奇幻漂流.azw3" },
+{ bookName: "少有人看见的美.azw3" },
+{ bookName: "尤·奈斯博作品精选(共3部）.azw3" },
+{ bookName: "尽管去做.azw3" },
+{ bookName: "尾文字鱼.azw3" },
+{ bookName: "工作、消费主义和新穷人.azw3" },
+{ bookName: "巨人的陨落.azw3" },
+{ bookName: "巨婴国.azw3" },
+{ bookName: "巴金文集（套装共19本）.azw3" },
+{ bookName: "巷说百物语全集(套装共5册).azw3" },
+{ bookName: "平凡的世界.azw3" },
+{ bookName: "年纪轻轻，就有猫了.azw3" },
+{ bookName: "幸福关系的7段旅程 .azw3" },
+{ bookName: "应许之地.azw3" },
+{ bookName: "开窍.azw3" },
+{ bookName: "当下的力量.azw3" },
+{ bookName: "当呼吸化为空气.azw3" },
+{ bookName: "当我谈跑步时 我谈些什么.azw3" },
+{ bookName: "影响孩子一生的世界名著 [插图本] （套装22册）.azw3" },
+{ bookName: "微习惯.azw3" },
+{ bookName: "微表情心理学（挖掘隐秘，洞悉微妙。任何人都无法保守内心的秘密，因为他的身体会说话。）.azw3" },
+{ bookName: "心灵侦探城塚翡翠.azw3" },
+{ bookName: "心理学（第13版.azw3" },
+{ bookName: "心理抚养.azw3" },
+{ bookName: "心理罪（全五册）.azw3" },
+{ bookName: "必读的数学三书（共3册）【公众号：电子书优.azw3" },
+{ bookName: "怒海妖船.azw3" },
+{ bookName: "思想会系列（全4册.azw3" },
+{ bookName: "思维与成功系列（套装共8册.azw3" },
+{ bookName: "思维力：高效的系统思维（第2版）.azw3" },
+{ bookName: "思维模型.azw3" },
+{ bookName: "怦然心动的人生整理魔法.azw3" },
+{ bookName: "怦然心动：精装纪念版.azw3" },
+{ bookName: "性与性格.azw3" },
+{ bookName: "慢读?传世经典（套装共18册.azw3" },
+{ bookName: "成就自我的心理必修课（套装12册）.azw3" },
+{ bookName: "成龙：还没长大就老了.azw3" },
+{ bookName: "我不是潘金莲.azw3" },
+{ bookName: "我拒绝将就的人生.azw3" },
+{ bookName: "我是马拉拉.azw3" },
+{ bookName: "我是马拉拉【公众号：电子书优选资源】.azw3" },
+{ bookName: "我的前半生.azw3" },
+{ bookName: "战争与和平.azw3" },
+{ bookName: "战争哀歌.azw3" },
+{ bookName: "所以，一切都是童年的错吗？.azw3" },
+{ bookName: "手把手教你投资理财（套装18册.azw3" },
+{ bookName: "打开一颗心.azw3" },
+{ bookName: "扪虱谈鬼录.azw3" },
+{ bookName: "技巧 - 郝培强.azw3" },
+{ bookName: "拉普拉斯的魔女.azw3" },
+{ bookName: "拖延心理学.azw3" },
+{ bookName: "拼了命，尽了兴.azw3" },
+{ bookName: "控虫师之夜莺星云.azw3" },
+{ bookName: "摆渡人.azw3" },
+{ bookName: "故事会2020年合集（共24册）.azw3" },
+{ bookName: "数学女孩.azw3" },
+{ bookName: "整体养育.azw3" },
+{ bookName: "文学经典合集（套装共11册）.azw3" },
+{ bookName: "断臂上的花朵（理想国译丛）.azw3" },
+{ bookName: "新一轮产业革命.azw3" },
+{ bookName: "新媒体从新手到高手（套装12册）众号：.azw3" },
+{ bookName: "无可慰藉.azw3" },
+{ bookName: "无欲的悲歌.azw3" },
+{ bookName: "无知.azw3" },
+{ bookName: "时间的形状.azw3" },
+{ bookName: "星星上的人.azw3" },
+{ bookName: "春风十里不如你.azw3" },
+{ bookName: "晓松奇谈世界卷+人文卷（套装共2册）.azw3" },
+{ bookName: "晚熟的人.azw3" },
+{ bookName: "暗黑童话.azw3" },
+{ bookName: "曾国潘 - 唐浩明.azw3" },
+{ bookName: "最重要的事，只有一件.azw3" },
+{ bookName: "有些事现在不做一辈子都不会做了.azw3" },
+{ bookName: "朗达·拜恩作品集.azw3" },
+{ bookName: "木心作品（套装共8册）.azw3" },
+{ bookName: "李鸿章传.azw3" },
+{ bookName: "极简宇宙史.azw3" },
+{ bookName: "极简工作.azw3" },
+{ bookName: "果敢力.azw3" },
+{ bookName: "格鲁夫给经理人的第一课.azw3" },
+{ bookName: "植物知道生命的答案.azw3" },
+{ bookName: "概率论与数理统计.azw3" },
+{ bookName: "樊登读书2020荐书集锦.azw3" },
+{ bookName: "正义之心：为什么人们总是坚持我对你错.azw3" },
+{ bookName: "此生未完成.azw3" },
+{ bookName: "每天读一点，进步一点点系列丛书（套装12册）.azw3" },
+{ bookName: "水浒传漫画版全套（共20册）.azw3" },
+{ bookName: "永恒的边缘.azw3" },
+{ bookName: "沉睡的人鱼之家.azw3" },
+{ bookName: "沉默的羔羊系列.azw3" },
+{ bookName: "没有宽恕就没有未来.azw3" },
+{ bookName: "法医秦明作品集 - 秦明.azw3" },
+{ bookName: "洪堡的礼物.azw3" },
+{ bookName: "清华韩秀云讲经济.azw3" },
+{ bookName: "湮没的辉煌 - 夏坚勇.azw3" },
+{ bookName: "漫画讲透孙子兵法（全四册）(1).azw3" },
+{ bookName: "特工皇妃楚乔传.azw3" },
+{ bookName: "犹太人的故事.azw3" },
+{ bookName: "狄仁杰奇案.azw3" },
+{ bookName: "狩猎愉快：世界推理小说简史.azw3" },
+{ bookName: "独角兽.azw3" },
+{ bookName: "玫瑰的名字.azw3" },
+{ bookName: "环球科学2020年合订本.azw3" },
+{ bookName: "现实不似你所见：量子引力之旅.azw3" },
+{ bookName: "理与人.azw3" },
+{ bookName: "理查德·塞勒套装3册子书优.azw3" },
+{ bookName: "理财就是理生活.azw3" },
+{ bookName: "生命3.0：人工智能时代，人类的进化与重生.azw3" },
+{ bookName: "生活的100个基本.azw3" },
+{ bookName: "甲骨文·人物传记精选捷.azw3" },
+{ bookName: "畅销作家写作全技巧.azw3" },
+{ bookName: "白马啸西风（世纪新修版）.azw3" },
+{ bookName: "白鹿原.azw3" },
+{ bookName: "百年孤独.azw3" },
+{ bookName: "皮姆历险记·全2册子书优选.azw3" },
+{ bookName: "盗墓笔记（全集）.azw3" },
+{ bookName: "盗梦空间.azw3" },
+{ bookName: "目标的力量.azw3" },
+{ bookName: "直到那一天.azw3" },
+{ bookName: "看见.azw3" },
+{ bookName: "真希望我父母读过这本书.azw3" },
+{ bookName: "知更鸟女孩.azw3" },
+{ bookName: "知更鸟女孩2.azw3" },
+{ bookName: "知更鸟女孩3：神秘人.azw3" },
+{ bookName: "确定性的终结.azw3" },
+{ bookName: "碟形世界：猫和少年魔笛手.azw3" },
+{ bookName: "碧血剑（世纪新修版）.azw3" },
+{ bookName: "社会心理学（第10版）子书优选.azw3" },
+{ bookName: "神秘博士：死亡之城.azw3" },
+{ bookName: "神雕侠侣（世纪新修版）.azw3" },
+{ bookName: "种子的信仰 (自然美文系列).azw3" },
+{ bookName: "科幻世界 2018年增刊.azw3" },
+{ bookName: "移动迷宫 - 詹姆斯·达什纳.azw3" },
+{ bookName: "稀缺.azw3" },
+{ bookName: "笑傲江湖（世纪新修版）.azw3" },
+{ bookName: "笑场.azw3" },
+{ bookName: "笔杆子是怎样炼成的：公文写作实战.azw3" },
+{ bookName: "第13个小时.azw3" },
+{ bookName: "第二次呼吸.azw3" },
+{ bookName: "精力管理.azw3" },
+{ bookName: "精要注意.azw3" },
+{ bookName: "红楼梦漫画版全套（共20册）.azw3" },
+{ bookName: "红楼梦里的情商课.azw3" },
+{ bookName: "终结一切战争.azw3" },
+{ bookName: "终身创造力.azw3" },
+{ bookName: "经典与情怀·值得一读的20本小说名作（全20册）.azw3" },
+{ bookName: "给年轻人的极简金融课.azw3" },
+{ bookName: "给爸爸妈妈的儿童性教育指导书.azw3" },
+{ bookName: "给青少年讲科学（共5册.azw3" },
+{ bookName: "给青年的十二封信.azw3" },
+{ bookName: "维特根斯坦传：天才之为责任.azw3" },
+{ bookName: "编舟记.azw3" },
+{ bookName: "罪孽的报应：德国和日本的战争记忆.azw3" },
+{ bookName: "置身事内.azw3" },
+{ bookName: "美丽与毁灭.azw3" },
+{ bookName: "美国众神.azw3" },
+{ bookName: "老舍经典文集（套装53册）.azw3" },
+{ bookName: "肖星的财务思维课.azw3" },
+{ bookName: "胡适文集.azw3" },
+{ bookName: "自信是所有问题的答案.azw3" },
+{ bookName: "自律，一种可以养成的习惯.azw3" },
+{ bookName: "自私的基因.azw3" },
+{ bookName: "苏联的最后一天1991年.azw3" },
+{ bookName: "草原动物园.azw3" },
+{ bookName: "莎士比亚全集.azw3" },
+{ bookName: "菊与刀.azw3" },
+{ bookName: "菜场经济学.azw3" },
+{ bookName: "藏地密码.azw3" },
+{ bookName: "蜜蜂之死.azw3" },
+{ bookName: "行为心理学(一个伟大心理学家的思想精华).azw3" },
+{ bookName: "被猜死的人.azw3" },
+{ bookName: "西游八十一案（全三部）.azw3" },
+{ bookName: "西游记漫画版全套（共20册）.azw3" },
+{ bookName: "见字如面.azw3" },
+{ bookName: "解忧杂货店.azw3" },
+{ bookName: "认知觉醒 .azw3" },
+{ bookName: "认知驱动.azw3" },
+{ bookName: "论自由.azw3" },
+{ bookName: "译文纪实特别专题：真实罪案·第一辑（套装共10册）.azw3" },
+{ bookName: "诗经楚辞鉴赏辞典 (中国古典诗词曲赋鉴赏系列工具书).azw3" },
+{ bookName: "诺曼底登陆.azw3" },
+{ bookName: "诺曼底登陆【公众号：电子书优选资源】.azw3" },
+{ bookName: "诺贝尔文学奖作品合集(套装共28册).azw3" },
+{ bookName: "读书与旅行-詹宏志.azw3" },
+{ bookName: "读者2020年合订本（共24册）.azw3" },
+{ bookName: "谁动了我的奶酪1+2.azw3" },
+{ bookName: "谁的青春不迷茫.azw3" },
+{ bookName: "谈谈方法.azw3" },
+{ bookName: "象与骑象人：幸福的假设.azw3" },
+{ bookName: "货币幻觉.azw3" },
+{ bookName: "资本之都.azw3" },
+{ bookName: "走近2050：注意力、互联网与人工智能.azw3" },
+{ bookName: "超新星纪元.azw3" },
+{ bookName: "超级版图：全球供应链、超级城市与新商业文明的崛起.azw3" },
+{ bookName: "越女剑（世纪新修版）.azw3" },
+{ bookName: "身体由我.azw3" },
+{ bookName: "身体知道答案.azw3" },
+{ bookName: "近代中国的乡土意识.azw3" },
+{ bookName: "这世界偷偷爱着你.azw3" },
+{ bookName: "这本书能让你戒烟.azw3" },
+{ bookName: "远方的鼓声.azw3" },
+{ bookName: "连城诀（世纪新修版）.azw3" },
+{ bookName: "重口味心理学（百万册纪念完整版）.azw3" },
+{ bookName: "重回时间的旅人.azw3" },
+{ bookName: "重建的世界.azw3" },
+{ bookName: "重生 - 斯蒂芬·金.azw3" },
+{ bookName: "量子世界的发现之旅.azw3" },
+{ bookName: "金庸传.azw3" },
+{ bookName: "银河帝国：基地七部曲.azw3" },
+{ bookName: "长安十二时辰 - 马伯庸.azw3" },
+{ bookName: "阅读变现.azw3" },
+{ bookName: "阅读是砍向我们内心冰封大海的斧头.azw3" },
+{ bookName: "陪安娜穿过漫漫长夜.azw3" },
+{ bookName: "雨果作品.azw3" },
+{ bookName: "雪山飞狐（世纪新修版）.azw3" },
+{ bookName: "面具.azw3" },
+{ bookName: "韭菜的自我修养(李笑来首次公开投资原则).azw3" },
+{ bookName: "飞狐外传（世纪新修版）.azw3" },
+{ bookName: "高效决策法系列.azw3" },
+{ bookName: "高效能人士的七个习惯（30周年纪念版）.azw3" },
+{ bookName: "鬼吹灯（全集）.azw3" },
+{ bookName: "鸟道.azw3" },
+{ bookName: "鹿鼎记（世纪新修版）.azw3" },
+{ bookName: "黎明之街.azw3" },
+{ bookName: "黑王子.azw3" },
+{ bookName: "龙头凤尾.azw3" },
+{ bookName: "巴菲特投资成功的七大秘诀.azw3" }
+        ];
+
+        const bookNameInput = document.getElementById('bookNameInput');
+        const resultContainer = document.getElementById('resultContainer');
+
+        // 核心搜索函数
+        function bookNameSearch() {
+            const keyword = bookNameInput.value.trim().toLowerCase();
+            resultContainer.innerHTML = '';
+
+            let filteredBooks = [];
+
+            if (!keyword) {
+                filteredBooks = [...bookData];
+                renderBookResult(filteredBooks, keyword);
+                return;
+            }
+
+            filteredBooks = bookData.filter(book => {
+                return book.bookName.toLowerCase().includes(keyword);
+            });
+
+            renderBookResult(filteredBooks, keyword);
+        }
+
+        // 渲染结果函数
+        function renderBookResult(data, keyword) {
+            if (!keyword) {
+                const allBooksDiv = document.createElement('div');
+                allBooksDiv.className = 'all-book-names';
+                const allBookNamesText = data.map(book => book.bookName).join('、');
+                allBooksDiv.innerHTML = `<strong>全部书名：</strong>${allBookNamesText}`;
+                resultContainer.appendChild(allBooksDiv);
+                return;
+            }
+
+            if (data.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.className = 'no-result';
+                noResult.textContent = '未找到匹配的书籍，请更换关键词重试';
+                resultContainer.appendChild(noResult);
+                return;
+            }
+
+            const resultList = document.createElement('ul');
+            resultList.className = 'result-list';
+
+            data.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.className = 'result-item';
+                listItem.innerHTML = `<strong>书名：</strong>${book.bookName}`;
+                resultList.appendChild(listItem);
+            });
+
+            resultContainer.appendChild(resultList);
+        }
+
+        // 绑定事件：输入实时搜索 + 回车触发
+        bookNameInput.addEventListener('input', bookNameSearch);
+        bookNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                bookNameSearch();
+                // 回车后保持输入框焦点
+                bookNameInput.focus();
+            }
+        });
+
+        // 页面加载显示全部书籍
+        window.addEventListener('load', bookNameSearch);
+    </script>
+</body>
+</html>
