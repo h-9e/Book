@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yi图书名epub查找</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 50px auto;
+            /* 移除毛玻璃，改用纯色背景 */
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .search-bar {
+            margin-bottom: 25px;
+        }
+
+        #bookNameInput {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #ffffff;
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #bookNameInput:focus {
+            border-color: #409eff;
+        }
+
+        .result-container {
+            min-height: 100px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #e4e7ed;
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #333;
+            transition: background-color 0.3s;
+            border-radius: 4px;
+        }
+
+        .result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .result-item strong {
+            color: #409eff;
+        }
+
+        .no-result {
+            text-align: center;
+            color: #666;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+
+        .all-book-names {
+            padding: 15px;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .all-book-names strong {
+            color: #409eff;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+   
+        <div class="search-bar">
+            <input type="text" id="bookNameInput" placeholder="输入关键词检索，支持实时匹配...">
+        </div>
+        <div class="result-container" id="resultContainer"></div>
+    </div>
+
+    <script>
+        // 单机本地书籍数据
+        const bookData = [
+       { bookName: "2021年度畅销历史精选集（共13册）.epub" },
+{ bookName: "20岁,光阴不再来.epub" },
+{ bookName: "3分钟哲学.epub" },
+{ bookName: "51区.epub" },
+{ bookName: "AI迷航 2：复活爱因斯坦.epub" },
+{ bookName: "A非理性繁荣yi.epub" },
+{ bookName: "Excel数据透视表从新手到高手.epub" },
+{ bookName: "[人性分解]罗伯特·J.索耶.epub" },
+{ bookName: "[人性的优点]卡耐基.epub" },
+{ bookName: "[人性的弱点]戴尔·卡耐基.epub" },
+{ bookName: "[人性能达到的境界]亚伯拉罕·马斯洛.epub" },
+{ bookName: "[价值：我对投资的思考]高瓴资本张磊.epub" },
+{ bookName: "[认同自己]斯蒂芬妮·斯塔尔.epub" },
+{ bookName: "[认知三部曲]理查德·尼斯贝特.epub" },
+{ bookName: "[认知心理学：认知科学与你的生活]凯瑟琳.epub" },
+{ bookName: "“哈尔罗杰历险记”套书14本.epub" },
+{ bookName: "《写作课》.epub" },
+{ bookName: "《圣殿春秋》+《无尽世界》.epub" },
+{ bookName: "《大厨教做正宗川菜600例》《天天家常菜》编委会.epub" },
+{ bookName: "《智慧与思维五部曲》.epub" },
+{ bookName: "《李诞脱口秀工作手册》---李诞.epub" },
+{ bookName: "《红楼梦》.epub" },
+{ bookName: "《置身事内：中国政府与经济发展》---兰小欢.epub" },
+{ bookName: "《鲁迅全集》（全20册）1938年民国权威版(2).epub" },
+{ bookName: "【精】东野圭吾作品集（45部）.epub" },
+{ bookName: "一个海难幸存者的故事.epub" },
+{ bookName: "一个观点，不一定对.epub" },
+{ bookName: "一分钟学会简笔画.epub" },
+{ bookName: "一句顶一万句.epub" },
+{ bookName: "一年通往作家路.epub" },
+{ bookName: "一生的财富：洛克菲勒写给儿子的38封信.epub" },
+{ bookName: "下流社会.epub" },
+{ bookName: "不可不读的文学经典系列.epub" },
+{ bookName: "不对称.epub" },
+{ bookName: "不情愿的大师：德国与新欧洲.epub" },
+{ bookName: "不成熟的父母.epub" },
+{ bookName: "不敢懈怠：曼德拉的总统岁月.epub" },
+{ bookName: "不朽.epub" },
+{ bookName: "不能承受的生命之轻.epub" },
+{ bookName: "与神对话.epub" },
+{ bookName: "世界上最神奇的24堂课.epub" },
+{ bookName: "世界少年文学经典文库·国外经典篇（全套47册）.epub" },
+{ bookName: "世界文明与文化系列（套装共4册）【公.epub" },
+{ bookName: "东京百年史.epub" },
+{ bookName: "中信世界经典必读系列（共15册.epub" },
+{ bookName: "中信出版-世界投资经典系列（套装12册.epub" },
+{ bookName: "中信出版科普精选系-生物医学大爆炸【公众号：倍思捷】.epub" },
+{ bookName: "中国古典文学名著丛书（套装共8册）.epub" },
+{ bookName: "中国悬疑鼻祖：民国探案大全集.epub" },
+{ bookName: "中国文化的深层结构【公众号：倍思捷】.epub" },
+{ bookName: "中国经典古典名著（套装20册）【公众号：电.epub" },
+{ bookName: "丹麦女孩.epub" },
+{ bookName: "九个完美陌生人.epub" },
+{ bookName: "乡村生活图景（阿摩司·奥兹继《爱与黑暗的故事》后小说创作新高度，入选2016年度“大众喜爱的50种图书”）.epub" },
+{ bookName: "二月河文集.epub" },
+{ bookName: "亲密关系_通往灵魂的桥梁(新版) (心灵书坊) - 克里斯多福·孟.epub" },
+{ bookName: "人性的弱点.epub" },
+{ bookName: "人生拼图版.epub" },
+{ bookName: "人生的智慧：如何才能幸福度过一生.epub" },
+{ bookName: "人的全景：弹簧人、思维体操与进步》.epub" },
+{ bookName: "人间便利店.epub" },
+{ bookName: "人间烟火：梁晓声作品精选集（套装共25册.epub" },
+{ bookName: "今昔物语（浮世绘插图珍藏版）.epub" },
+{ bookName: "从你的全世界路过.epub" },
+{ bookName: "从行动开始：自我管理的科学.epub" },
+{ bookName: "伊坂幸太郎作品.epub" },
+{ bookName: "你从未真正拼过【电子书推荐资源】.epub" },
+{ bookName: "你内心的无能为力来自对世界的恐惧.epub" },
+{ bookName: "你好，陌生人.epub" },
+{ bookName: "你敢问,我敢答!(套装10册).epub" },
+{ bookName: "你的能力要学会用故事讲出来.epub" },
+{ bookName: "佳期如梦之海上繁花.epub" },
+{ bookName: "依然热爱生活.epub" },
+{ bookName: "依然热爱生活[公众号：电子书优选资源].epub" },
+{ bookName: "俄罗斯套娃-比奥伊·卡萨雷斯.epub" },
+{ bookName: "信任：社会美德与创造经济繁荣.epub" },
+{ bookName: "倒悬的地平线.epub" },
+{ bookName: "倭寇战争全史.epub" },
+{ bookName: "假如岁月足够长.epub" },
+{ bookName: "催眠二十八讲.epub" },
+{ bookName: "傲慢与偏见.epub" },
+{ bookName: "像经济学家一样思考.epub" },
+{ bookName: "儿童教育心理学.epub" },
+{ bookName: "克里斯汀- 斯蒂芬·金 2017年.epub" },
+{ bookName: "克里米亚战争：被遗忘的帝国博弈 .epub" },
+{ bookName: "入江昭：第二次世界大战在亚洲及太平洋的起源.epub" },
+{ bookName: "全家都爱读的绘本故事书(全套23册).epub" },
+{ bookName: "全球化与国家竞争：新兴七国比较研究.epub" },
+{ bookName: "全能侦探社.epub" },
+{ bookName: "全部知识学的基础.epub" },
+{ bookName: "关于那个人的备忘录.epub" },
+{ bookName: "冯唐成事心法.epub" },
+{ bookName: "决定你上限的不是能力，而是格局.epub" },
+{ bookName: "减法教育.epub" },
+{ bookName: "切尔诺贝利的午夜.epub" },
+{ bookName: "创新自信力.epub" },
+{ bookName: "创造日本：1853—1964.epub" },
+{ bookName: "创造自然.epub" },
+{ bookName: "别对我温柔 (果然世界超级畅销小说大系).epub" },
+{ bookName: "别想生活有答案.epub" },
+{ bookName: "动物寓言集 - 胡里奥?科塔萨尔.epub" },
+{ bookName: "北京，1912.epub" },
+{ bookName: "区块链：从数字货币到信用社会.epub" },
+{ bookName: "十万个为什么（第六版） 全套18本 韩启德主编(1).epub" },
+{ bookName: "十三邀3.epub" },
+{ bookName: "十位童话大师写给孩子的至美童话（全十本）.epub" },
+{ bookName: "午夜将至：核战边缘的肯尼迪、赫鲁晓夫与卡斯特罗【甲骨文丛书】.epub" },
+{ bookName: "半小时漫画大套装.epub" },
+{ bookName: "半小时漫画科学史.epub" },
+{ bookName: "半小时漫画预防常见病.epub" },
+{ bookName: "单读26：全球真实故事集.epub" },
+{ bookName: "博弈论基础 (当代经济学教科书译丛).epub" },
+{ bookName: "即兴演讲.epub" },
+{ bookName: "原则 - 瑞达利欧.epub" },
+{ bookName: "原则v1_1.epub" },
+{ bookName: "去中国的小船.epub" },
+{ bookName: "反常识.epub" },
+{ bookName: "反本能：如何对抗你的习以为常 - 卫蓝.epub" },
+{ bookName: "口才如金：快速提升会销业绩的演讲技巧.epub" },
+{ bookName: "古拉格之恋：一个爱情与求生的真实故事.epub" },
+{ bookName: "古董衣情缘（珍藏版）.epub" },
+{ bookName: "可复制的领导力：樊登的9堂商业课.epub" },
+{ bookName: "君主论.epub" },
+{ bookName: "告别圆舞曲.epub" },
+{ bookName: "呼吸.epub" },
+{ bookName: "呼吸运动全书.epub" },
+{ bookName: "哈佛公开课：性格决定命运-移然.epub" },
+{ bookName: "哈佛公开课：细节决定成败-杨玉萍.epub" },
+{ bookName: "哈佛大学经典课程分享（套装9册）.epub" },
+{ bookName: "哈利波特与被诅咒的孩子.epub" },
+{ bookName: "哈利波特（1-7）.epub" },
+{ bookName: "哈利波特（全集）.epub" },
+{ bookName: "哪些科学新发现即将改变世界（共8册）.epub" },
+{ bookName: "唤醒创作力.epub" },
+{ bookName: "四大名著·彩插珍藏版：全八册.epub" },
+{ bookName: "回头客战略.epub" },
+{ bookName: "回访历史：新东欧之旅（东欧版《二手时间》，讲述普通人的信仰、希望、忐忑与矛盾）.epub" },
+{ bookName: "回话的艺术.epub" },
+{ bookName: "园丁与木匠.epub" },
+{ bookName: "国际关系与格局.epub" },
+{ bookName: "国际大奖文学经典（套装共10册）.epub" },
+{ bookName: "图灵程序设计丛书：数据科学从入门到实.epub" },
+{ bookName: "图灵经典计算机基础系列（套装全4册）【公.epub" },
+{ bookName: "图解观呼吸：学会呼吸 改变人生 .epub" },
+{ bookName: "图说区块链.epub" },
+{ bookName: "垂直的阅读.epub" },
+{ bookName: "城市化转型与土地陷阱.epub" },
+{ bookName: "基因宇宙.epub" },
+{ bookName: "塔木德智慧全集.epub" },
+{ bookName: "外国名著小说合集（套装14册.epub" },
+{ bookName: "大众哲学 - 艾思奇.epub" },
+{ bookName: "大家小书：老子、孔子、墨子及其学派.epub" },
+{ bookName: "大漠苍狼.epub" },
+{ bookName: "大鱼.epub" },
+{ bookName: "失败的帝国：从斯大林到戈尔巴乔夫.epub" },
+{ bookName: "奥斯曼帝国的衰亡：一战中东，1914—1920.epub" },
+{ bookName: "好人宋没用.epub" },
+{ bookName: "好味道的秘密.epub" },
+{ bookName: "好奇心的秘密：天才是如何炼成的.epub" },
+{ bookName: "好好思考.epub" },
+{ bookName: "好好说话.epub" },
+{ bookName: "好笑的爱.epub" },
+{ bookName: "如何成为讲话有趣的人.epub" },
+{ bookName: "如何提升性格优势.epub" },
+{ bookName: "如何有效阅读一本书：超实用笔记读书法.epub" },
+{ bookName: "娜塔莎之舞：俄罗斯文化史（通过俄国的文学和艺术，探索俄罗斯民族的建构及其内心世界）.epub" },
+{ bookName: "婚姻的意义.epub" },
+{ bookName: "媚骨之书.epub" },
+{ bookName: "孙子兵法.epub" },
+{ bookName: "季羡林全集（套装共30卷）.epub" },
+{ bookName: "孤独的进化者.epub" },
+{ bookName: "学习技巧.epub" },
+{ bookName: "学会快乐.epub" },
+{ bookName: "学会独立思考.epub" },
+{ bookName: "孩子如何思考.epub" },
+{ bookName: "宇宙之书.epub" },
+{ bookName: "守夜.epub" },
+{ bookName: "宋慈洗冤笔记（1-3册.epub" },
+{ bookName: "宛如阿修罗.epub" },
+{ bookName: "富有的习惯.epub" },
+{ bookName: "富爸爸系列全集.epub" },
+{ bookName: "寡头.epub" },
+{ bookName: "对赌（2017全新修订版）.epub" },
+{ bookName: "小王子三部曲.epub" },
+{ bookName: "小说的艺术.epub" },
+{ bookName: "少将滋干之母.epub" },
+{ bookName: "少年Pi的奇幻漂流.epub" },
+{ bookName: "少有人看见的美.epub" },
+{ bookName: "尼采经典著作及研究丛书（全4册）.epub" },
+{ bookName: "尽管去做.epub" },
+{ bookName: "局部·伟大的工匠.epub" },
+{ bookName: "工作、消费主义和新穷人.epub" },
+{ bookName: "巫术师.epub" },
+{ bookName: "巴菲特投资成功的七大秘诀.epub" },
+{ bookName: "巴金文集(套装共19本).epub" },
+{ bookName: "巷说百物语全集(套装共5册).epub" },
+{ bookName: "帝国的背影系列（套装共3册）.epub" },
+{ bookName: "帷幕.epub" },
+{ bookName: "幸福关系的7段旅程.epub" },
+{ bookName: "幸福家庭的秘密.epub" },
+{ bookName: "幽微的人性》-李玫瑾.epub" },
+{ bookName: "庆祝无意义.epub" },
+{ bookName: "开窍.epub" },
+{ bookName: "强蚁（世界推理小说三巨匠松本清张力作）.epub" },
+{ bookName: "当下的力量（珍藏版） - （德国）埃克哈特?托利(Eckhart Tolle).epub" },
+{ bookName: "当呼吸化为空气.epub" },
+{ bookName: "当自我来敲门：构建意识大脑.epub" },
+{ bookName: "影响孩子一生的世界名著  插图本  （套.epub" },
+{ bookName: "微心理学书系（套装四册）.epub" },
+{ bookName: "心智社会：从细胞到人工智能，人类思维的优雅解读.epub" },
+{ bookName: "心灵侦探城塚翡翠.epub" },
+{ bookName: "心理咨询.epub" },
+{ bookName: "心理学（第13版）.epub" },
+{ bookName: "心理抚养.epub" },
+{ bookName: "必读的数学三书（共3册.epub" },
+{ bookName: "忽而今夏（典藏版） - 明前雨后.epub" },
+{ bookName: "思想会系列（全4册.epub" },
+{ bookName: "思维与成功系列（套装共8册.epub" },
+{ bookName: "思维力：高效的系统思维（第2版）.epub" },
+{ bookName: "思维模型.epub" },
+{ bookName: "思考快与慢.epub" },
+{ bookName: "怦然心动的人生整理魔法.epub" },
+{ bookName: "怦然心动：精装纪念版.epub" },
+{ bookName: "性与性格.epub" },
+{ bookName: "情商：全六册.epub" },
+{ bookName: "意林201914.epub" },
+{ bookName: "慢 - 米兰·昆德拉.epub" },
+{ bookName: "慢.epub" },
+{ bookName: "慢性鼻炎鼻窦炎.epub" },
+{ bookName: "慢读?传世经典（套装共18册.epub" },
+{ bookName: "懂得倾听，是学会沟通的第一步.epub" },
+{ bookName: "成就自我的心理必修课（套装12册）.epub" },
+{ bookName: "成龙：还没长大就老了.epub" },
+{ bookName: "我拒绝将就的人生.epub" },
+{ bookName: "我是谁？如果有我，有几个我？.epub" },
+{ bookName: "我是马拉拉.epub" },
+{ bookName: "我是马拉拉【公众号：电子书优选资源】.epub" },
+{ bookName: "战争与和平.epub" },
+{ bookName: "战胜过敏性鼻炎.epub" },
+{ bookName: "打开一颗心.epub" },
+{ bookName: "批判性思维.epub" },
+{ bookName: "把时间当作朋友（第3版）.epub" },
+{ bookName: "拖延心理学.epub" },
+{ bookName: "指匠 - 萨拉·沃特斯.epub" },
+{ bookName: "挽救计划.epub" },
+{ bookName: "掌控习惯（个人实践版—习惯的力量）.epub" },
+{ bookName: "推敲“自我”：小说在18世纪的英国（修订版） (三联哈佛燕京学术丛书).epub" },
+{ bookName: "擒拿格斗.epub" },
+{ bookName: "故事会2020年合集（共24册）.epub" },
+{ bookName: "数学女孩1.epub" },
+{ bookName: "数学女孩2：费马大定理 .epub" },
+{ bookName: "数学女孩3.epub" },
+{ bookName: "整体养育.epub" },
+{ bookName: "文明的冲突与世界秩序的重建.epub" },
+{ bookName: "文明的崩塌：公元前1177年的地中海世界.epub" },
+{ bookName: "文案圣经.epub" },
+{ bookName: "斯蒂芬金小说合集.epub" },
+{ bookName: "无敌舰队.epub" },
+{ bookName: "无知 .epub" },
+{ bookName: "无知.epub" },
+{ bookName: "时间之箭：揭开时间最大奥秘之科旅程.epub" },
+{ bookName: "时间回旋.epub" },
+{ bookName: "时间的礼物.epub" },
+{ bookName: "春宴.epub" },
+{ bookName: "春雪.epub" },
+{ bookName: "显微镜下的大明.epub" },
+{ bookName: "晚熟的人.epub" },
+{ bookName: "月亮与六便士.epub" },
+{ bookName: "有话说.epub" },
+{ bookName: "朝鲜战争：尘封六十年的内幕.epub" },
+{ bookName: "木心作品（套装共8册）.epub" },
+{ bookName: "来去乡下过日子 (献礼大地).epub" },
+{ bookName: "果敢力.epub" },
+{ bookName: "枢纽：3000年的中国.epub" },
+{ bookName: "格局.epub" },
+{ bookName: "格局逆袭.2：致富的逻辑.epub" },
+{ bookName: "格局逆袭：普通人的制胜之道.epub" },
+{ bookName: "格鲁夫给经理人的第一课.epub" },
+{ bookName: "梦的解析(德文无删节直译本，革新人类思维方式的巨著)(果麦经典.epub" },
+{ bookName: "梵高的咖啡馆.epub" },
+{ bookName: "棉花糖实验.epub" },
+{ bookName: "植物知道生命的答案.epub" },
+{ bookName: "樊登读书2020荐书集锦.epub" },
+{ bookName: "歌剧魅影【公众号：Kindle图书共享】.epub" },
+{ bookName: "此生未完成.epub" },
+{ bookName: "死亡刻痕.epub" },
+{ bookName: "比特币：一个虚幻而真实的金融世界.epub" },
+{ bookName: "毕淑敏文化地理散文：世界如锦心如梭.epub" },
+{ bookName: "汉语的本质和历史.epub" },
+{ bookName: "沟通的方法.epub" },
+{ bookName: "沟通的艺术：轻松应对社交场合（套装共5册.epub" },
+{ bookName: "洗脑术：思想控制的荒唐史.epub" },
+{ bookName: "洞察力的秘密-加里·克莱因.epub" },
+{ bookName: "活着就是冲天一喊.epub" },
+{ bookName: "流浪地球.epub" },
+{ bookName: "海浪-弗吉尼亚·伍尔夫.epub" },
+{ bookName: "海：另一个未知的宇宙.epub" },
+{ bookName: "清华韩秀云讲经济.epub" },
+{ bookName: "游戏力养育.epub" },
+{ bookName: "潜意识知道答案.epub" },
+{ bookName: "火神.epub" },
+{ bookName: "烟雾弥漫你的眼：我在火葬场学到的生命（美国2015年黑马热销书）.epub" },
+{ bookName: "烹饪调味学.epub" },
+{ bookName: "爆款：如何打造超级IP.epub" },
+{ bookName: "爱的算法 - [美]刘宇昆.epub" },
+{ bookName: "牛津科普读本.epub" },
+{ bookName: "狄仁杰奇案.epub" },
+{ bookName: "狩猎愉快：世界推理小说简史.epub" },
+{ bookName: "独特疗法调治鼻炎咽炎.epub" },
+{ bookName: "独角兽.epub" },
+{ bookName: "玩笑.epub" },
+{ bookName: "环球科学2020年合订本.epub" },
+{ bookName: "现实不似你所见：量子引力之旅.epub" },
+{ bookName: "理与人.epub" },
+{ bookName: "理性之谜.epub" },
+{ bookName: "理查德·塞勒套装3册【公众号：电子书优.epub" },
+{ bookName: "理财就是理生活.epub" },
+{ bookName: "生命3.0：人工智能时代，人类的进化与重生.epub" },
+{ bookName: "生活在别处.epub" },
+{ bookName: "生活的100个基本.epub" },
+{ bookName: "田园诗与狂想曲：关中模式与前近代社会的再认识.epub" },
+{ bookName: "甲骨文·人物传记精选.epub" },
+{ bookName: "畅销作家写作全技巧.epub" },
+{ bookName: "疯狂人类进化史.epub" },
+{ bookName: "白噪音.epub" },
+{ bookName: "百年孤独 (根据马尔克斯指定版本翻译,未做任何增删) (加西亚?马尔克斯, 范晔) (Z-Library).epub" },
+{ bookName: "皮姆历险记·全2册【公众号：电子书优选.epub" },
+{ bookName: "目标的力量.epub" },
+{ bookName: "相遇.epub" },
+{ bookName: "看懂世界格局系列全集（套装全六册）：大国博弈_ 大国之略_石油战争_中国周边_用地图看懂世界格局_世界是红的.epub" },
+{ bookName: "看戏一得：吴小如戏曲随笔.epub" },
+{ bookName: "真希望我父母读过这本书.epub" },
+{ bookName: "真確.epub" },
+{ bookName: "睡个好觉：如何科学改善你的睡眠.epub" },
+{ bookName: "知否，知否，应是绿肥红廋.epub" },
+{ bookName: "知识的错觉.epub" },
+{ bookName: "硬核生存指南（关键生存技能＋硬核生存知识＋超强“生存之脑”，锻炼强大意识，提升生存维度，让你临危不乱，先人一步化解危机，获得掌控生活的安全感！） - 夏川.epub" },
+{ bookName: "确定性的终结.epub" },
+{ bookName: "社会心理学.epub" },
+{ bookName: "秦谜：重新发现秦始皇.epub" },
+{ bookName: "移动迷宫（套装共4册）.epub" },
+{ bookName: "移动迷宫（套装共5册）.epub" },
+{ bookName: "稀缺.epub" },
+{ bookName: "稻盛和夫经典收藏版共6册（拯救人类的哲学、干法、领导者的资质、调动员工积极性的七个关键、阿米巴经营（实战篇）、稻盛和夫语录100条.epub" },
+{ bookName: "穷思维 富思维.epub" },
+{ bookName: "穷查理宝典：查理·芒格智慧箴言录 - 查理·芒格(1).epub" },
+{ bookName: "穿梭时间的女孩.epub" },
+{ bookName: "笑忘录.epub" },
+{ bookName: "笔杆子是怎样炼成的：公文写作实战.epub" },
+{ bookName: "第13个小时.epub" },
+{ bookName: "第三个警察.epub" },
+{ bookName: "第六大陆 （上）.epub" },
+{ bookName: "简史：世界隐秘知识博库（套装全4册）【绝无仅有的记录，寻找隐秘的旧史，穿透窒息的时间长河】 - 大卫·沃克 & 柯珊 & 等.epub" },
+{ bookName: "简笔画5000例，一本就够.epub" },
+{ bookName: "简笔画5000例，一本就够3.epub" },
+{ bookName: "管家（耶鲁大学公开课必读之作，识书之人奥巴马挚爱的美国传奇作家，长销的美国文学经典。）.epub" },
+{ bookName: "精准努力：如何用金融思维在职场快速超车.epub" },
+{ bookName: "精进有道：想清楚、坚持住、有能力_孙陶然.4.epub" },
+{ bookName: "素书-黄石公.epub" },
+{ bookName: "红楼梦.epub" },
+{ bookName: "红楼梦里的情商课.epub" },
+{ bookName: "终身创造力.epub" },
+{ bookName: "终身成长.epub" },
+{ bookName: "经典与情怀·值得一读的20本小说名作（全20册）.epub" },
+{ bookName: "经济学的思维方式（原书第13版）.epub" },
+{ bookName: "经济学通识课.epub" },
+{ bookName: "给年轻人的极简金融课.epub" },
+{ bookName: "给爸爸妈妈的儿童性教育指导书.epub" },
+{ bookName: "给青少年讲科学（共5册.epub" },
+{ bookName: "罪孽的报应：德国和日本的战争记忆.epub" },
+{ bookName: "置身事内.epub" },
+{ bookName: "美丽与毁灭.epub" },
+{ bookName: "美国国家图书馆珍藏名传系列（系列一共8册） - 雅各布·阿伯特.epub" },
+{ bookName: "美国国家图书馆珍藏名传系列（系列二共13册） - 雅各布·阿伯特.epub" },
+{ bookName: "翻译的技巧.epub" },
+{ bookName: "老实人 (伏尔泰作品集).epub" },
+{ bookName: "耳中火炬【公众号：Kindle图书共享】.epub" },
+{ bookName: "联邦预算：美国政府怎样花钱.epub" },
+{ bookName: "聪明的人，从来不会输给情绪.epub" },
+{ bookName: "肖星的财务思维课.epub" },
+{ bookName: "脑与阅读.epub" },
+{ bookName: "自信是所有问题的答案.epub" },
+{ bookName: "自律，一种可以养成的习惯.epub" },
+{ bookName: "自我治疗过敏性鼻炎.epub" },
+{ bookName: "自控力.epub" },
+{ bookName: "草原动物园.epub" },
+{ bookName: "荣格文集典藏版.epub" },
+{ bookName: "莫言经典作品【公众号：倍思捷】.epub" },
+{ bookName: "蜜蜂之死.epub" },
+{ bookName: "行动变现：如何让我们的拼搏更有价值.epub" },
+{ bookName: "被背叛的遗嘱.epub" },
+{ bookName: "西尾维新“忘却侦探”系列（1-8册).epub" },
+{ bookName: "西游八十一案（全三部）.epub" },
+{ bookName: "见字如来.epub" },
+{ bookName: "规模：复杂世界的简单法则.epub" },
+{ bookName: "认知觉醒.epub" },
+{ bookName: "认知驱动.epub" },
+{ bookName: "记忆力 思维力 学习力大全集.epub" },
+{ bookName: "论自由.epub" },
+{ bookName: "设计你的工作和人生.epub" },
+{ bookName: "译文名著精选·第三辑（套装共29册）【公.epub" },
+{ bookName: "译文纪实特别专题：真实罪案·第一辑（套装共10册）.epub" },
+{ bookName: "说服.epub" },
+{ bookName: "说话体现格局【电子书推荐资源】.epub" },
+{ bookName: "诺曼底登陆.epub" },
+{ bookName: "读懂一本书：樊登读书法.epub" },
+{ bookName: "读者2020年合订本（共24册）.epub" },
+{ bookName: "读者文摘大全集.epub" },
+{ bookName: "谁动了我的奶酪1+2.epub" },
+{ bookName: "谈谈方法.epub" },
+{ bookName: "财务自由之路Ⅲ.epub" },
+{ bookName: "货币幻觉.epub" },
+{ bookName: "贯华堂古本《水浒传》(1).epub" },
+{ bookName: "资本之都.epub" },
+{ bookName: "资本论 - (德) 马克思著，朱登编译.epub" },
+{ bookName: "超实用儿童心理学：孩子心理和行为背后的真相.epub" },
+{ bookName: "超新星纪元.epub" },
+{ bookName: "超级版图：全球供应链、超级城市与新商业文明的崛起.epub" },
+{ bookName: "超脑（套装共2册）.epub" },
+{ bookName: "超越大脑的思考革命.epub" },
+{ bookName: "跟随勇敢的心：我最难忘的读书之旅.epub" },
+{ bookName: "身份.epub" },
+{ bookName: "身体由我.epub" },
+{ bookName: "轰炸东京：1942，美国人的珍珠港复仇之战.epub" },
+{ bookName: "输赢.epub" },
+{ bookName: "近代中国的乡土意识.epub" },
+{ bookName: "追凶者.epub" },
+{ bookName: "速求共眠.epub" },
+{ bookName: "逻辑思维训练1200题.epub" },
+{ bookName: "遇到百分之百的女孩.epub" },
+{ bookName: "遇见幸福.epub" },
+{ bookName: "遇见未知的自己.epub" },
+{ bookName: "道金斯科学经典系列：自私的基因＋盲眼钟表匠＋魔鬼的牧师（套装共三册）.epub" },
+{ bookName: "那不勒斯四部曲.epub" },
+{ bookName: "邦查女孩.epub" },
+{ bookName: "重回时间的旅人.epub" },
+{ bookName: "野蛮大陆：第二次世界大战之后的欧洲.epub" },
+{ bookName: "金庸传.epub" },
+{ bookName: "金色笔记.epub" },
+{ bookName: "钢铁是怎样炼成的.epub" },
+{ bookName: "错不在我.epub" },
+{ bookName: "镖人2（读客文化出品。轰动日本的中国漫画！《镖人》第二册轰动上市！漫画大师高桥留美子、藤泽亨，知名作家马伯庸，知名动画导演田晓鹏鼎力推荐！）.epub" },
+{ bookName: "镜狱岛事件.epub" },
+{ bookName: "镜花缘.epub" },
+{ bookName: "间谍课：黑色宣言.epub" },
+{ bookName: "阅读变现.epub" },
+{ bookName: "阅读是砍向我们内心冰封大海的斧头.epub" },
+{ bookName: "阴谋与爱情.epub" },
+{ bookName: "阿甘正传.epub" },
+{ bookName: "陪安娜穿过漫漫长夜.epub" },
+{ bookName: "隐性逻辑：教你快速切换思考方式.epub" },
+{ bookName: "隐藏的意识.epub" },
+{ bookName: "雅克和他的主人 .epub" },
+{ bookName: "雨果作品.epub" },
+{ bookName: "雪落香杉树 - [美] 戴维·伽特森.epub" },
+{ bookName: "零秒工作.epub" },
+{ bookName: "青鸟故事集（用温情与敬意诠释历史，以智力和想象解密往事） - 李敬泽.epub" },
+{ bookName: "非暴力沟通 - 马歇尔?卢森堡.epub" },
+{ bookName: "非理性的人 （译文经典）.epub" },
+{ bookName: "非理性繁荣.epub" },
+{ bookName: "非理性繁荣yi.epub" },
+{ bookName: "革命之夏：美国独立的起源【甲骨文丛书】.epub" },
+{ bookName: "韭菜的自我修养(李笑来首次公开投资原则) - 李笑来.epub" },
+{ bookName: "风筝.epub" },
+{ bookName: "香山帮.epub" },
+{ bookName: "高手：超越普通人的高效时间管理法.epub" },
+{ bookName: "高效决策法系列.epub" },
+{ bookName: "魅力史：激发欲望与视觉征服的艺术.epub" },
+{ bookName: "魔鬼聊天术.epub" },
+{ bookName: "鱼什么都知道.epub" },
+{ bookName: "黎明之街.epub" },
+{ bookName: "黑暗的左手.epub" },
+{ bookName: "黑王子.epub" },
+{ bookName: "鼻炎中医调治150问.epub" },
+{ bookName: "龙头凤尾.epub" },
+{ bookName: "图解科学、数学、哲学（套装共3册）.epub" }
+        ];
+
+        const bookNameInput = document.getElementById('bookNameInput');
+        const resultContainer = document.getElementById('resultContainer');
+
+        // 核心搜索函数
+        function bookNameSearch() {
+            const keyword = bookNameInput.value.trim().toLowerCase();
+            resultContainer.innerHTML = '';
+
+            let filteredBooks = [];
+
+            if (!keyword) {
+                filteredBooks = [...bookData];
+                renderBookResult(filteredBooks, keyword);
+                return;
+            }
+
+            filteredBooks = bookData.filter(book => {
+                return book.bookName.toLowerCase().includes(keyword);
+            });
+
+            renderBookResult(filteredBooks, keyword);
+        }
+
+        // 渲染结果函数
+        function renderBookResult(data, keyword) {
+            if (!keyword) {
+                const allBooksDiv = document.createElement('div');
+                allBooksDiv.className = 'all-book-names';
+                const allBookNamesText = data.map(book => book.bookName).join('、');
+                allBooksDiv.innerHTML = `<strong>全部书名：</strong>${allBookNamesText}`;
+                resultContainer.appendChild(allBooksDiv);
+                return;
+            }
+
+            if (data.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.className = 'no-result';
+                noResult.textContent = '未找到匹配的书籍，请更换关键词重试';
+                resultContainer.appendChild(noResult);
+                return;
+            }
+
+            const resultList = document.createElement('ul');
+            resultList.className = 'result-list';
+
+            data.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.className = 'result-item';
+                listItem.innerHTML = `<strong>书名：</strong>${book.bookName}`;
+                resultList.appendChild(listItem);
+            });
+
+            resultContainer.appendChild(resultList);
+        }
+
+        // 绑定事件：输入实时搜索 + 回车触发
+        bookNameInput.addEventListener('input', bookNameSearch);
+        bookNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                bookNameSearch();
+                // 回车后保持输入框焦点
+                bookNameInput.focus();
+            }
+        });
+
+        // 页面加载显示全部书籍
+        window.addEventListener('load', bookNameSearch);
+    </script>
+</body>
+</html>
