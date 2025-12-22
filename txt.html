@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>查找Yi图书馆mobi格式</title>
+    <title>Yi图书名txt多格式查找</title>
     <style>
         * {
             margin: 0;
@@ -311,7 +311,7 @@
                 const allBooksDiv = document.createElement('div');
                 allBooksDiv.className = 'all-book-names';
                 const allBookNamesText = data.join('、');
-                allBooksDiv.innerHTML = `<strong>全部书名：</strong>${allBookNamesText}`;
+                allBooksDiv.innerHTML = `<strong>书名有：</strong>${allBookNamesText}`;
                 resultContainer.appendChild(allBooksDiv);
                 return;
             }
