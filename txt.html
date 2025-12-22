@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查找Yi图书馆mobi格式</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .search-bar {
+            margin-bottom: 25px;
+        }
+
+        #bookNameInput {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #bookNameInput:focus {
+            border-color: #409eff;
+        }
+
+        .result-container {
+            min-height: 100px;
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #333;
+            transition: background-color 0.3s;
+        }
+
+        .result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .result-item strong {
+            color: #409eff;
+        }
+
+        .no-result {
+            text-align: center;
+            color: #999;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+
+        .all-book-names {
+            padding: 15px;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .all-book-names strong {
+            color: #409eff;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+   
+        <div class="search-bar">
+            <input type="text" id="bookNameInput" placeholder="关键词...">
+        </div>
+        <div class="result-container" id="resultContainer"></div>
+    </div>
+
+    <script>
+        const bookData = ["10个有趣的算术游戏.docx", "2007新东方英语词根词缀记忆大全.doc", "A传承者2018.pptx", "A学习数学常用公式.docx", "A巴比伦最富有的人yi经典语录.docx", "a拼音字母学习.docx", "A邻家的百万富翁yi.docx", "BIOS 三星电脑.doc", "DELL系统上使用近场通信图.docx", "Dos命令入侵局域网电脑2021.docx", "H3C W2612 瘦AP转胖AP笔记本刷机教程 图.docx", "HEXY乘法表.bat.txt", "IP找运行.txt", "kiftd网络文件传输.txt", "LAN局域网盘.txt", "MySQL配置教程图.docx", "ping文本.txt"
+, "shi公开课性格决定命运.doc"
+, "shi聪明的投资者.doc"
+, "vivo手机ADB.txt"
+, "Windows8.1系统自定义Yi.txt"
+, "Yi函数计算智能.xlsx"
+, "《哈佛商学院最受欢迎的领导课》.pptx"
+, "《怎样读书收获大》.txt"
+, "《我的奋斗》.docx"
+, "《活着》作者：余华.txt"
+, "《谜踪之国IV：幽潜重泉》作者：天下霸唱（全本精校版）.txt"
+, "一年级拼音同步练习.doc"
+, "世界500强面试题.TXT"
+, "中华奇书全集.txt"
+, "事业与职业商思维.docx"
+, "二年级上册语文同音字专项练习-1a47b8fdc381e53a580216fc700abb68a982ada6.doc"
+, "人人都爱经济学.docx"
+, "人性的弱点.txt"
+, "人生的必修课.txt"
+, "传承三十六策.docx"
+, "作文哲学1家曾说过.docx"
+, "作文阅读的热爱.txt"
+, "使用命令来同步系统时间.txt"
+, "信纸免费红色福字图.docx"
+, "儿童情绪管理图书_我好快乐.ppt"
+, "儿童睡前故事.txt"
+, "光猫TEWA766G.doc"
+, "六级653分高手过四六级考试的规律,考前复习方法,不懂照样过(1).txt"
+, "内网外网-迅捷PDF转换器.docx"
+, "冥想nineteen.docx"
+, "冰箱TCL操作设置202405.doc"
+, "函数.docx"
+, "初一数学错题集个性化学习手册统计总表(1)(1).xls"
+, "制作面包.docx"
+, "厚 黑 学.txt"
+, "双城记.txt"
+, "右脑学英语.txt"
+, "同步作文.doc"
+, "呼吸教程运动.docx"
+, "呼吸气功呼吸调息2024.doc"
+, "品牌.txt"
+, "哈佛公开课：性格决定命运-移然.txt"
+, "哈佛公开课：细节决定成败-杨玉萍.txt"
+, "四级607经验.docx"
+, "园丁与木匠.txt"
+, "图 局域网内固定自己的ip.docx"
+, "图 弱电工程中常用的几个ping命令.docx"
+, "图 挡风玻璃起雾哪个键 前风挡除雾开外循环还是内循环.docx"
+, "图ping命令还能这么玩.docx"
+, "图Win右键菜单技巧.docx"
+, "图局域网共享文件的方法.docx"
+, "图搭建FTP服务器以实现局域网飞速传输文件.docx"
+, "图海康摄像头如何查看IP.docx"
+, "图用自己的电脑搭建Web服务器建网站.docx"
+, "在DELL系统上使用近场通信(NFC)功能.docx"
+, "大华录像机摄像头20221021.txt"
+, "大学.中庸.孟子.txt"
+, "大英博物馆世界简史【公众号：倍思捷】.txt"
+, "奶酪.txt"
+, "孙子兵法与三十六计.txt"
+, "学10个有趣的算术游戏.docx"
+, "学习技巧nineteen.docx"
+, "学习英语方法.txt"
+, "学冥想nineteen.docx"
+, "学呼吸教程运动.docx"
+, "学年人教版七年级英语上册.doc"
+, "学数学思维专题训练.docx"
+, "学数学速算法yi.doc"
+, "学炒菜的技巧yi.txt"
+, "学熬粥yi.txt"
+, "学英语收集的打印.docx"
+, "学英语方法和技巧.docx"
+, "学计划.docx"
+, "学长日漫漫十年匆匆.docx"
+, "学食物营养学.pptx"
+, "安全用电常识.docx"
+, "安装文件名字C盘位置.txt"
+, "家庭收入如何分配.docx"
+, "富爸爸和穷爸爸的故事tu下.docx"
+, "富爸爸点石成金.txt"
+, "富爸爸的个人财务状况表.xls"
+, "小册子模板.docx"
+, "小学一年级数学思维专题训练.docx"
+, "小王子.txt"
+, "小神笔2018.pptx"
+, "小米135鸡汤文.txt"
+, "局域网内在线弱电设备IP地址的.docx"
+, "巴黎圣母院.txt"
+, "常用的交换机组网20210616.docx"
+, "常见思维偏见、思维错误和非理性.docx"
+, "弱电智能化.docx"
+, "归来记.txt"
+, "心理咨询师.txt"
+, "心理操纵与反操纵.txt"
+, "快速获取文件夹内所有文件名代码.txt"
+, "怎么远程控制他人电脑.txt"
+, "思考?具箱.docx"
+, "意志力是训练出来的-菲尔图.txt"
+, "成功人士99个说话细节.txt"
+, "战略决定成败.txt"
+, "打开注册表.txt"
+, "投机定律.docx"
+, "报刊英语单词精华.txt"
+, "搞懂什么是vlan20210616.docx"
+, "摄像头POE尾插水晶头接线康视尼.docx"
+, "故事海系列.txt"
+, "数学速算法w1.doc"
+, "整体养育.txt"
+, "新人教版七年级上册语文期末知识汇总学案.doc"
+, "无线AP的Fat模式和Fit模.txt"
+, "时间管理.doc"
+, "易经简.txt"
+, "智能YI家居系统20221013.txt"
+, "智能家居无线系统Yi设置.doc"
+, "最新最全七年级上册文学常识专题复习.doc"
+, "本我自我与超我.docx"
+, "每天读点孙子兵法.txt"
+, "毕业论文答辩).pptx"
+, "汉语拼音音节表202010.xlsx"
+, "洗澡游泳.doc"
+, "洞察力的秘密-加里·克莱因.txt"
+, "活出全新的自己.txt"
+, "海康威视摄像头.txt"
+, "海康威视萤石球机.doc"
+, "消费心理学.txt"
+, "烤面食.doc"
+, "甲骨文·人物传记精选.txt"
+, "电脑ping网速20210616.docx"
+, "电脑快捷键ping技巧.docx"
+, "电脑快捷键技巧.docx"
+, "电脑硬件信息.txt"
+, "电话销售.txt"
+, "百万富翁入门指南.txt"
+, "百万富翁速成指南.doc"
+, "百年孤独.txt"
+, "知错就改.txt"
+, "破所有电脑的开机密码..txt"
+, "竞争战略.docx"
+, "笔记20211212.docx"
+, "笔记2022.docx"
+, "简爱.txt"
+, "素书-黄石公.txt"
+, "红adb或fastboot命令行功能米4X.txt"
+, "网络小米WLAN配置Yi链接WIFI.doc"
+, "网络记录Yi语句.txt"
+, "网页制作.docx"
+, "罗密欧与朱丽叶.txt"
+, "置身事内.txt"
+, "耒阳天气html.txt"
+, "自动挡车安全技巧.docx"
+, "花生壳远程账号密码.txt"
+, "英语的学习方法和技巧.docx"
+, "莫言经典作品【公众号：倍思捷】.txt"
+, "表格函数yi技巧202112.docx"
+, "表格函数yi技巧202112.txt"
+, "要写好作文.doc"
+, "计算专练.docx"
+, "认识 人民币.pptx"
+, "设备信息大华.xlsx"
+, "设备信息海康威视.xlsx"
+, "谁动了我的奶酪2——走出迷宫.txt"
+, "谁动了我的面包2021.docx"
+, "谁动了我的面包走出迷宫.docx"
+, "贝贝的睡前童话故事(301个).txt"
+, "财务自由  思维.docx"
+, "赛丽麦进销存说明.txt"
+, "走出抑郁的阴影.txt"
+, "超详细的幻灯片使用教程.ppt"
+, "身体意识与身体美学-理查德?舒斯特曼.txt"
+, "远程连接电脑.txt"
+, "配电基础知识汇总.docx"
+, "重生之励志人生.txt"
+, "长日漫漫十年匆匆nineteen.docx"
+, "阅读笔记202312Yi享收集更新txt.docx"
+, "顾客进门第一句话.docx"
+, "预防牙齿松动.txt"
+, "风水.txt"
+, "食物营养学.pptx"
+, "高考词组.pptx"];
+
+        const bookNameInput = document.getElementById('bookNameInput');
+        const resultContainer = document.getElementById('resultContainer');
+
+        function bookNameSearch() {
+            const keyword = bookNameInput.value.trim().toLowerCase();
+            resultContainer.innerHTML = '';
+
+            let filteredBooks = [];
+
+            if (!keyword) {
+                filteredBooks = [...bookData];
+                renderBookResult(filteredBooks, keyword);
+                return;
+            }
+
+            filteredBooks = bookData.filter(bookName => 
+                bookName.toLowerCase().includes(keyword)
+            );
+
+            renderBookResult(filteredBooks, keyword);
+        }
+
+        function renderBookResult(data, keyword) {
+            if (!keyword) {
+                const allBooksDiv = document.createElement('div');
+                allBooksDiv.className = 'all-book-names';
+                const allBookNamesText = data.join('、');
+                allBooksDiv.innerHTML = `<strong>全部书名：</strong>${allBookNamesText}`;
+                resultContainer.appendChild(allBooksDiv);
+                return;
+            }
+
+            if (data.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.className = 'no-result';
+                noResult.textContent = '未找到匹配的书籍，请更换书名关键词重试';
+                resultContainer.appendChild(noResult);
+                return;
+            }
+
+            const resultList = document.createElement('ul');
+            resultList.className = 'result-list';
+
+            data.forEach(bookName => {
+                const listItem = document.createElement('li');
+                listItem.className = 'result-item';
+                listItem.innerHTML = `<strong>书名：</strong>${bookName}`;
+                resultList.appendChild(listItem);
+            });
+
+            resultContainer.appendChild(resultList);
+        }
+
+        // 保留实时输入检索和回车触发
+        bookNameInput.addEventListener('input', bookNameSearch);
+        bookNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                bookNameSearch();
+            }
+        });
+
+        window.addEventListener('load', bookNameSearch);
+    </script>
+</body>
+</html>
